@@ -21,25 +21,29 @@ export const Autocomplete: React.FC<AutocompleteProps> = ({
     onSelected(null);
   };
 
-  useEffect(() => {
-    const handler = debounce((input: string) => {
-      if (!input) {
+  const debouncedHandler = React.useMemo(() => {
+    return debounce((input: string) => {
+      const normalizedInput = input.trim();
+
+      if (!normalizedInput) {
         setSuggestions(people);
       } else {
         const filtered = people.filter(person =>
-          person.name.toLowerCase().includes(input.toLowerCase()),
+          person.name.toLowerCase().includes(normalizedInput.toLowerCase()),
         );
 
         setSuggestions(filtered);
       }
     }, delay);
+  }, [people, delay]);
 
-    handler(query);
+  useEffect(() => {
+    debouncedHandler(query);
 
     return () => {
-      handler.cancel();
+      debouncedHandler.cancel();
     };
-  }, [query, people, delay]);
+  }, [query, debouncedHandler]);
 
   return (
     <div className={`dropdown ${isOpen ? 'is-active' : ''}`}>
